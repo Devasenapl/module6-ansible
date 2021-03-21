@@ -1,0 +1,101 @@
+/******************************************
+Aim : Adding script from server to clients
+*******************************************/
+
+In Master/Controller
+
+ubuntu@anscontroller:~$ sudo su -
+root@anscontroller:~# su - devops
+devops@anscontroller:~$ cd /tmp/
+devops@anscontroller:/tmp$ ls
+inventory1
+new.txt
+new1.txt
+
+devops@anscontroller:~$ vi addscript.yml
+devops@anscontroller:/tmp$ cat addscript.yml
+- name: PLAY1
+  hosts: server1   ## group name from the inventory file
+  tasks:
+    - name: task1 copy a file
+      copy:
+        src:  /tmp/serverinfo1.txt     ##source is always controller machine
+        dest: /tmp
+- name: PLAY2
+  hosts: server2   ## group name from the inventory file
+  tasks:
+    - name: task2 copy a file
+      copy:
+        src:  /tmp/serverinfo1.txt     ##source is always controller machine
+        dest: /tmp
+
+devops@anscontroller:/tmp$ vi serverinfo1.txt
+
+devops@anscontroller:/tmp$ cat serverinfo1.txt
+This text has been added by custom script
+
+devops@anscontroller:/tmp$ ansible-playbook -i /home/devops/inventory1 addscript.yml
+
+PLAY [PLAY1] ************************************************************************************************************************************************
+
+TASK [Gathering Facts] **************************************************************************************************************************************
+ok: [172.31.41.228]
+
+TASK [task1 copy a file] ************************************************************************************************************************************
+changed: [172.31.41.228]
+
+PLAY [PLAY2] ************************************************************************************************************************************************
+
+TASK [Gathering Facts] **************************************************************************************************************************************
+ok: [172.31.20.215]
+
+TASK [task2 copy a file] ************************************************************************************************************************************
+changed: [172.31.20.215]
+
+PLAY RECAP **************************************************************************************************************************************************
+172.31.20.215              : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+172.31.41.228              : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In slave1(agent1)
+
+ubuntu@ansagent1:~$ sudo su -
+root@ansagent1:~# cd /tmp/
+root@ansagent1:/tmp# ls
+ansible.cfg
+devops
+hello.txt
+hsperfdata_root
+naresh.txt
+new.txt
+serverinfo1.txt
+root@ansagent1:/tmp# cat serverinfo1.txt
+This text has been added by custom script
+
+root@ansagent1:/tmp#
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In slave2(agent2)
+~~~~~~~~~~~~~~~~~
+
+ubuntu@ansagent2:~$ sudo su -
+root@ansagent2:~# ls
+labs  snap
+root@ansagent2:~# cd /tmp/
+root@ansagent2:/tmp# ls
+ansible.cfg
+devops
+hello1.txt
+naresh.txt
+new1.txt
+serverinfo1.txt
+root@ansagent2:/tmp# cat serverinfo1.txt
+This text has been added by custom script
+
+root@ansagent2:/tmp#
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
