@@ -1,0 +1,175 @@
+/***********  Output for creating the 3 clusters ******************/
+
+ubuntu@anscontroller:~$ sudo su -
+root@anscontroller:~# su - devops
+devops@anscontroller:~$ ll /etc/ansible/
+total 36
+drwxr-xr-x  3 root root  4096 Mar 19 15:19 ./
+drwxr-xr-x 92 root root  4096 Mar 20 17:19 ../
+-rw-r--r--  1 root root 19988 Mar 19 15:19 ansible.cfg
+-rw-r--r--  1 root root     0 Mar 19 15:00 ansible.config
+-rw-r--r--  1 root root    91 Mar 19 13:59 inventory1
+drwxr-xr-x  2 root root  4096 Mar 16 00:09 roles/
+devops@anscontroller:~$
+
+devops@anscontroller:/etc/ansible$ ls -l
+total 28
+-rw-r--r-- 1 root root 19988 Mar 19 15:19 ansible.cfg
+-rw-r--r-- 1 root root     0 Mar 19 15:00 ansible.config
+-rw-r--r-- 1 root root    91 Mar 19 13:59 inventory1
+drwxr-xr-x 2 root root  4096 Mar 16 00:09 roles
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Ansagent1 
+ubuntu@ansagent1:~$ sudo su -
+root@ansagent1:~# cd /home/devops/
+root@ansagent1:/home/devops# ls -l
+total 0
+root@ansagent1:/home/devops# cd .ssh/
+root@ansagent1:/home/devops/.ssh# ls -l
+total 4
+-rw------- 1 devops devops 405 Mar 20 16:32 authorized_keys
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Ansagent2
+ubuntu@ansagent2:~$ sudo su -
+root@ansagent2:~# cd /home/devops/
+root@ansagent2:/home/devops# ls -l
+total 0
+root@ansagent2:/home/devops# cd .ssh/
+root@ansagent2:/home/devops/.ssh# ls -l
+total 4
+-rw------- 1 devops devops 405 Mar 20 16:34 authorized_keys
+root@ansagent2:/home/devops/.ssh#
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+3 clusters
+~~~~~~~~~~
+devops@anscontroller:~$
+
+root@ansagent1:~#
+
+root@ansagent2:~#
+
+/***********  Output for installing java on slave 1(agent1)  **************/
+
+ubuntu@anscontroller:~$ sudo su -
+root@anscontroller:~# su -
+root@anscontroller:~# su - devops
+devops@anscontroller:~$ vi javas1.yml
+
+devops@anscontroller:~$ cat javas1.yml
+- hosts: server1
+  become: yes
+  tasks:
+   - name: Install Java 1.8
+     apt:     ## apt-get install openjdk-8-jdk -y
+      name: openjdk-8-jdk
+      state: present
+devops@anscontroller:~$
+
+devops@anscontroller:~$ ansible-playbook -i inventory1 javas1.yml
+
+PLAY [server1] *****************************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [172.31.41.228]
+
+TASK [Install Java 1.8] ********************************************************
+
+changed: [172.31.41.228]
+
+PLAY RECAP *********************************************************************
+172.31.41.228              : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+devops@anscontroller:~$
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+                     Output on slave1 (agent1)
+
+
+ubuntu@ansagent1:~$ sudo su -
+root@ansagent1:~# java -version
+openjdk version "1.8.0_282"
+OpenJDK Runtime Environment (build 1.8.0_282-8u282-b08-0ubuntu1~18.04-b08)
+OpenJDK 64-Bit Server VM (build 25.282-b08, mixed mode)
+root@ansagent1:~#
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+====================================================================
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+/***********  Output for installing mysql on slave 2(agent2)  **************/
+
+
+devops@anscontroller:~$ vi sqls2.yml
+
+devops@anscontroller:~$ cat sqls2.yml
+- hosts: server2
+  become: yes
+  tasks:
+   - name: Install mysql-server
+     apt:     ## apt-get install openmysql-server -y
+      name: [mysql-server]
+      state: present
+
+devops@anscontroller:~$
+
+
+devops@anscontroller:~$ ansible-playbook -i inventory1 sqls2.yml
+
+PLAY [server2] *****************************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [172.31.20.215]
+
+TASK [Install mysql-server] ****************************************************
+changed: [172.31.20.215]
+
+PLAY RECAP *********************************************************************
+172.31.20.215              : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+devops@anscontroller:~$
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+                         output on slave 2(agent2) 
+
+ubuntu@ansagent2:~$ sudo su -
+
+root@ansagent2:~# mysql
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 5
+Server version: 5.7.33-0ubuntu0.18.04.1 (Ubuntu)
+
+Copyright (c) 2000, 2021, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| sys                |
++--------------------+
+4 rows in set (0.00 sec)
+
+mysql>
+
